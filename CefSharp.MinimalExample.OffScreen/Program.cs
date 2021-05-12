@@ -17,39 +17,22 @@ namespace CefSharp.MinimalExample.OffScreen
 
         public static int Main(string[] args)
         {
+#if ANYCPU
+            //Only required for PlatformTarget of AnyCPU
+            AppDomain.CurrentDomain.AssemblyResolve += Resolver;
+#endif
+
             const string testUrl = "https://www.google.com/";
 
             Console.WriteLine("This example application will load {0}, take a screenshot, and save it to your desktop.", testUrl);
             Console.WriteLine("You may see Chromium debugging output, please wait...");
             Console.WriteLine();
 
-#if NETCOREAPP
-            //We are using our current exe as the BrowserSubProcess
-            //Multiple instances will be spawned to handle all the 
-            //Chromium proceses, render, gpu, network, plugin, etc.
-            var subProcessExe = new CefSharp.BrowserSubprocess.BrowserSubprocessExecutable();
-            var result = subProcessExe.Main(args);
-            if (result > 0)
-            {
-                return result;
-            }
-#endif
-
             var settings = new CefSettings()
             {
                 //By default CefSharp will use an in-memory cache, you need to specify a Cache Folder to persist data
                 CachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CefSharp\\Cache")
             };
-
-#if NETCOREAPP
-            //We use our Applications exe as the BrowserSubProcess, multiple copies
-            //will be spawned
-            //TODO: The OffScreen implementation is crashing on Exit (WPF/WinForms are working fine).
-            //So for now this is commented out and the old .Net CefSharp.BrowserSubProcess.exe
-            //is used.
-            //var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            //settings.BrowserSubprocessPath = exePath;
-#endif
 
             //Perform dependency check to make sure all relevant resources are in our output directory.
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
@@ -119,5 +102,26 @@ namespace CefSharp.MinimalExample.OffScreen
                 });
             }
         }
+
+        // Will attempt to load missing assembly from either x86 or x64 subdir
+        //when PlatformTarget is AnyCPU
+#if ANYCPU
+        private static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
+        {
+            if (args.Name.StartsWith("CefSharp.Core.Runtime"))
+            {
+                string assemblyName = args.Name.Split(new[] { ',' }, 2)[0] + ".dll";
+                string archSpecificPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+                                                       Environment.Is64BitProcess ? "x64" : "x86",
+                                                       assemblyName);
+
+                return File.Exists(archSpecificPath)
+                           ? System.Reflection.Assembly.LoadFile(archSpecificPath)
+                           : null;
+            }
+
+            return null;
+        }
+#endif
     }
 }

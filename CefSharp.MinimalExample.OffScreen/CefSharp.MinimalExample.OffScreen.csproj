@@ -1,9 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\CefSharp.OffScreen.84.4.10\build\CefSharp.OffScreen.props" Condition="Exists('..\packages\CefSharp.OffScreen.84.4.10\build\CefSharp.OffScreen.props')" />
-  <Import Project="..\packages\CefSharp.Common.84.4.10\build\CefSharp.Common.props" Condition="Exists('..\packages\CefSharp.Common.84.4.10\build\CefSharp.Common.props')" />
-  <Import Project="..\packages\cef.redist.x86.84.4.1\build\cef.redist.x86.props" Condition="Exists('..\packages\cef.redist.x86.84.4.1\build\cef.redist.x86.props')" />
-  <Import Project="..\packages\cef.redist.x64.84.4.1\build\cef.redist.x64.props" Condition="Exists('..\packages\cef.redist.x64.84.4.1\build\cef.redist.x64.props')" />
+  <Import Project="..\packages\CefSharp.Common.89.0.170\build\CefSharp.Common.props" Condition="Exists('..\packages\CefSharp.Common.89.0.170\build\CefSharp.Common.props')" />
+  <Import Project="..\packages\cef.redist.x86.89.0.17\build\cef.redist.x86.props" Condition="Exists('..\packages\cef.redist.x86.89.0.17\build\cef.redist.x86.props')" />
+  <Import Project="..\packages\cef.redist.x64.89.0.17\build\cef.redist.x64.props" Condition="Exists('..\packages\cef.redist.x64.89.0.17\build\cef.redist.x64.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -20,6 +19,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <CefSharpAnyCpuSupport>true</CefSharpAnyCpuSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -61,10 +61,44 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\AnyCPU\Debug\net452\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;ANYCPU</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\AnyCPU\Release\net452\</OutputPath>
+    <DefineConstants>TRACE;ANYCPU</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CefSharp, Version=89.0.170.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138">
+      <HintPath>..\packages\CefSharp.Common.89.0.170\lib\net452\CefSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CefSharp.Core, Version=89.0.170.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138">
+      <HintPath>..\packages\CefSharp.Common.89.0.170\lib\net452\CefSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CefSharp.OffScreen, Version=89.0.170.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138">
+      <HintPath>..\packages\CefSharp.OffScreen.89.0.170\lib\net452\CefSharp.OffScreen.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -83,6 +117,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\CefSharp.Common.84.4.10\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.84.4.10\build\CefSharp.Common.targets')" />
-  <Import Project="..\packages\CefSharp.OffScreen.84.4.10\build\CefSharp.OffScreen.targets" Condition="Exists('..\packages\CefSharp.OffScreen.84.4.10\build\CefSharp.OffScreen.targets')" />
+  <Target Name="CefSharpAfterBuildDebug" AfterTargets="AfterBuild">
+    <CallTarget Targets="CefSharpAfterBuildDiagnostic" />
+  </Target>
+  <Import Project="..\packages\CefSharp.Common.89.0.170\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.89.0.170\build\CefSharp.Common.targets')" />
 </Project>

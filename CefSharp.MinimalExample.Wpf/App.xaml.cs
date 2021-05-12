@@ -9,7 +9,10 @@ namespace CefSharp.MinimalExample.Wpf
     {
         public App()
         {
-#if !NETCOREAPP
+#if ANYCPU
+            //Only required for PlatformTarget of AnyCPU
+            AppDomain.CurrentDomain.AssemblyResolve += Resolver;
+#endif
             var settings = new CefSettings()
             {
                 //By default CefSharp will use an in-memory cache, you need to specify a Cache Folder to persist data
@@ -28,9 +31,33 @@ namespace CefSharp.MinimalExample.Wpf
             //For screen sharing add (see https://bitbucket.org/chromiumembedded/cef/issues/2582/allow-run-time-handling-of-media-access#comment-58677180)
             settings.CefCommandLineArgs.Add("enable-usermedia-screen-capturing");
 
-            //Perform dependency check to make sure all relevant resources are in our output directory.
-            Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
-#endif
+            //Example of checking if a call to Cef.Initialize has already been made, we require this for
+            //our .Net 5.0 Single File Publish example, you don't typically need to perform this check
+            //if you call Cef.Initialze within your WPF App constructor.
+            if (!Cef.IsInitialized)
+            {
+                //Perform dependency check to make sure all relevant resources are in our output directory.
+                Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
+            }
         }
+
+#if ANYCPU
+        private static System.Reflection.Assembly Resolver(object sender, ResolveEventArgs args)
+        {
+            if (args.Name.StartsWith("CefSharp.Core.Runtime"))
+            {
+                string assemblyName = args.Name.Split(new[] { ',' }, 2)[0] + ".dll";
+                string archSpecificPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+                                                       Environment.Is64BitProcess ? "x64" : "x86",
+                                                       assemblyName);
+
+                return File.Exists(archSpecificPath)
+                           ? System.Reflection.Assembly.LoadFile(archSpecificPath)
+                           : null;
+            }
+
+            return null;
+        }
+#endif
     }
 }
